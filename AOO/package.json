@@ -1,0 +1,44 @@
+{
+  "name": "facebook-manager",
+  "version": "1.0.0",
+  "description": "Desktop app for managing Facebook accounts",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "dist": "electron-builder --publish=never"
+  },
+  "dependencies": {
+    "@azure/cosmos": "^4.0.0",
+    "@azure/identity": "^4.0.1",
+    "@azure/storage-blob": "^12.20.0",
+    "axios": "^1.13.2",
+    "crypto-js": "^4.2.0",
+    "dotenv": "^17.2.4"
+  },
+  "devDependencies": {
+    "electron": "^39.2.7",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.facebookmanager.app",
+    "productName": "Facebook Manager",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "public/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": "dir"
+    },
+    "mac": {
+      "target": "dmg"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
+  }
+}

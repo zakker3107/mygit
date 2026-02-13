@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-tw">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Facebook Manager</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    button { padding: 10px 20px; margin: 10px; }
+    #accountList { margin-top: 20px; }
+    .account-item { border: 1px solid #ccc; padding: 10px; margin: 5px 0; }
+    #azureStatus { font-size: 14px; }
+  </style>
+</head>
+<body>
+  <h1>Facebook 管理器</h1>
+  <div style="background-color: #f0f0f0; padding: 10px; margin-bottom: 20px; border: 1px solid #ccc;">
+    <h3>隱私聲明</h3>
+    <p>此應用程式會收集匿名使用數據以改進服務。您可以隨時選擇退出數據收集。</p>
+    <button id="privacyBtn">隱私設定</button>
+  </div>
+  <button id="loginBtn">登入 Facebook</button>
+  <button id="addAccountBtn">添加帳戶</button>
+  <button id="deviceSecurityBtn">防盜設備管理</button>
+  <button id="localControlBtn">本地控制</button>
+  
+  <!-- 新系統功能區域 -->
+  <div style="background-color: #f0f0f0; padding: 15px; margin: 20px 0; border: 1px solid #999; border-radius: 5px;">
+    <h3>系統功能</h3>
+    <button id="persistenceBtn" style="padding: 8px 15px; margin: 5px; background-color: #4caf50; color: white; border: none; border-radius: 3px; cursor: pointer;">☁️ 帳戶備份</button>
+    <button id="loggingBtn" style="padding: 8px 15px; margin: 5px; background-color: #ff9800; color: white; border: none; border-radius: 3px; cursor: pointer;">📊 日誌管理</button>
+    <button id="notificationBtn" style="padding: 8px 15px; margin: 5px; background-color: #2196F3; color: white; border: none; border-radius: 3px; cursor: pointer;">🔔 通知中心</button>
+    <button id="syncBtn" style="padding: 8px 15px; margin: 5px; background-color: #9c27b0; color: white; border: none; border-radius: 3px; cursor: pointer;">🔄 數據同步</button>
+  </div>
+  
+  <!-- Azure 功能區域 -->
+  <div style="background-color: #e3f2fd; padding: 15px; margin: 20px 0; border: 1px solid #2196F3; border-radius: 5px;">
+    <h3>Azure 存儲管理</h3>
+    <button id="azureConnectBtn">連接 Azure</button>
+    <button id="azureCreateContainerBtn">建立容器</button>
+    <button id="azureListBlobsBtn">列出檔案</button>
+    <button id="callCloudApiBtn">呼叫雲端 API 範例</button>
+    <div id="azureStatus" style="margin-top: 10px; padding: 10px; background-color: #fff; border: 1px solid #2196F3; border-radius: 3px; min-height: 20px;"></div>
+  </div>
+  <div id="accountList">
+    <h2>帳戶列表</h2>
+    <div id="loading" style="display: none;">載入中...</div>
+    <div id="accounts"></div>
+  </div>
+  <div id="content"></div>
+  <script src="renderer.js"></script>
+</body>
+</html>
