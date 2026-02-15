@@ -447,6 +447,39 @@ class GoogleCloudService {
     return decoded;
   }
 
+  // ============ 本地 Firestore 回退實作 ============
+  _localSaveToFirestore(collection, documentId, data) {
+    try {
+      const dir = path.join(this.localRoot, 'firestore', collection);
+      fs.mkdirSync(dir, { recursive: true });
+      const fullPath = path.join(dir, `${documentId}.json`);
+      fs.writeFileSync(fullPath, JSON.stringify({ ...data, _savedAt: new Date().toISOString() }));
+      console.log(`✓ 本地 Firestore 儲存成功: ${collection}/${documentId}`);
+      return { success: true, message: '本地儲存成功' };
+    } catch (error) {
+      console.error('❌ 本地 Firestore 儲存失敗:', error.message);
+      return { success: false, message: `本地儲存失敗: ${error.message}` };
+    }
+  }
+
+  _localGetFromFirestore(collection, documentId) {
+    try {
+      const fullPath = path.join(this.localRoot, 'firestore', collection, `${documentId}.json`);
+      if (!fs.existsSync(fullPath)) {
+        return { success: false, message: '本地文件不存在' };
+      }
+      const raw = fs.readFileSync(fullPath, 'utf8');
+      const parsed = JSON.parse(raw);
+      // Remove internal fields if present
+      if (parsed._savedAt) delete parsed._savedAt;
+      console.log(`✓ 本地 Firestore 讀取成功: ${collection}/${documentId}`);
+      return { success: true, data: parsed };
+    } catch (error) {
+      console.error('❌ 本地 Firestore 讀取失敗:', error.message);
+      return { success: false, message: `本地讀取失敗: ${error.message}` };
+    }
+  }
+
   // 記錄服務狀態
   logStatus() {
     console.log('【Google Cloud 服務狀態】');
