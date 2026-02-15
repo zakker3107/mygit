@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const azureService = require('./azure-service');
+const { GoogleCloudService } = require('./google-cloud-service');
 const accountPersistenceService = require('./account-persistence-service');
 const errorLoggingService = require('./error-logging-service');
 const authenticationService = require('./authentication-service');
@@ -81,6 +82,15 @@ app.on('window-all-closed', () => {
 async function initializeServices() {
   try {
     console.log('Starting service initialization...');
+    
+    // 首先初始化 Google Cloud 連接
+    try {
+      const gcResult = await GoogleCloudService.connect();
+      console.log(`✓ Google Cloud初始化: ${gcResult.message}`);
+    } catch (error) {
+      console.error(`⚠️ Google Cloud初始化失敗: ${error.message}`);
+    }
+
     const serviceOrder = [
       { name: '通知', service: notificationService },
       { name: '錯誤日誌', service: errorLoggingService },
@@ -356,4 +366,103 @@ ipcMain.handle('notification:markAsRead', async (event, notificationId) => {
 
 ipcMain.handle('notification:getStats', async (event) => {
   return notificationService.getNotificationStats();
+});
+
+// ============ Google Cloud IPC 處理器 ============
+ipcMain.handle('googleCloud:connect', async () => {
+  try {
+    const result = await GoogleCloudService.connect();
+    if (result.success) {
+      notificationService.success('連接成功', 'Google Cloud 已連接');
+    } else {
+      notificationService.error('連接失敗', result.message);
+    }
+    return result;
+  } catch (error) {
+    errorLoggingService.logError('GOOGLE_CLOUD_CONNECT_ERROR', error.message, error.stack);
+    notificationService.error('錯誤', error.message);
+    return { success: false, message: error.message };
+  }
+});
+
+ipcMain.handle('googleCloud:uploadFile', async (event, bucket, filePath, fileData) => {
+  try {
+    const result = await GoogleCloudService.uploadFile(bucket, filePath, fileData);
+    if (result.success) {
+      notificationService.success('上傳成功', filePath);
+    }
+    return result;
+  } catch (error) {
+    errorLoggingService.logError('GOOGLE_CLOUD_UPLOAD_ERROR', error.message, error.stack);
+    return { success: false, message: error.message };
+  }
+});
+
+ipcMain.handle('googleCloud:downloadFile', async (event, bucket, filePath) => {
+  try {
+    return await GoogleCloudService.downloadFile(bucket, filePath);
+  } catch (error) {
+    errorLoggingService.logError('GOOGLE_CLOUD_DOWNLOAD_ERROR', error.message, error.stack);
+    return { success: false, message: error.message };
+  }
+});
+
+ipcMain.handle('googleCloud:deleteFile', async (event, bucket, filePath) => {
+  try {
+    const result = await GoogleCloudService.deleteFile(bucket, filePath);
+    if (result.success) {
+      notificationService.success('刪除成功', filePath);
+    }
+    return result;
+  } catch (error) {
+    errorLoggingService.logError('GOOGLE_CLOUD_DELETE_ERROR', error.message, error.stack);
+    return { success: false, message: error.message };
+  }
+});
+
+ipcMain.handle('googleCloud:listFiles', async (event, bucket, prefix) => {
+  try {
+    return await GoogleCloudService.listFiles(bucket, prefix);
+  } catch (error) {
+    errorLoggingService.logError('GOOGLE_CLOUD_LIST_ERROR', error.message, error.stack);
+    return { success: false, message: error.message };
+  }
+});
+
+ipcMain.handle('googleCloud:saveToFirestore', async (event, collection, documentId, data) => {
+  try {
+    const result = await GoogleCloudService.saveToFirestore(collection, documentId, data);
+    if (result.success) {
+      notificationService.success('儲存成功', `${collection}/${documentId}`);
+    }
+    return result;
+  } catch (error) {
+    errorLoggingService.logError('GOOGLE_CLOUD_FIRESTORE_SAVE_ERROR', error.message, error.stack);
+    return { success: false, message: error.message };
+  }
+});
+
+ipcMain.handle('googleCloud:getFromFirestore', async (event, collection, documentId) => {
+  try {
+    return await GoogleCloudService.getFromFirestore(collection, documentId);
+  } catch (error) {
+    errorLoggingService.logError('GOOGLE_CLOUD_FIRESTORE_GET_ERROR', error.message, error.stack);
+    return { success: false, message: error.message };
+  }
+});
+
+ipcMain.handle('googleCloud:getStatus', async () => {
+  // 快取連線狀態查詢以減少頻繁檢查
+  const cached = getCachedResponse('googleCloud:getStatus');
+  if (cached !== null) {
+    return cached;
+  }
+  GoogleCloudService.logStatus();
+  const response = { 
+    connected: GoogleCloudService.isConnected,
+    projectId: GoogleCloudService.projectId,
+    bucket: GoogleCloudService.storageBucket
+  };
+  setCachedResponse('googleCloud:getStatus', response);
+  return response;
 });

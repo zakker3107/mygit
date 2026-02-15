@@ -135,6 +135,18 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getSyncStatus: () => ipcRenderer.invoke('sync:getSyncStatus')
   },
 
+  // ============ Google Cloud API ============
+  googleCloud: {
+    connect: () => ipcRenderer.invoke('googleCloud:connect'),
+    uploadFile: (bucket, filePath, fileData) => ipcRenderer.invoke('googleCloud:uploadFile', bucket, filePath, fileData),
+    downloadFile: (bucket, filePath) => ipcRenderer.invoke('googleCloud:downloadFile', bucket, filePath),
+    deleteFile: (bucket, filePath) => ipcRenderer.invoke('googleCloud:deleteFile', bucket, filePath),
+    listFiles: (bucket, prefix) => ipcRenderer.invoke('googleCloud:listFiles', bucket, prefix),
+    saveToFirestore: (collection, documentId, data) => ipcRenderer.invoke('googleCloud:saveToFirestore', collection, documentId, data),
+    getFromFirestore: (collection, documentId) => ipcRenderer.invoke('googleCloud:getFromFirestore', collection, documentId),
+    getStatus: () => ipcRenderer.invoke('googleCloud:getStatus')
+  },
+
   // ============ 通知 API ============
   notification: {
     list: (limit) => ipcRenderer.invoke('notification:list', limit),

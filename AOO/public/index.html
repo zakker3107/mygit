@@ -42,6 +42,23 @@
     <button id="callCloudApiBtn">呼叫雲端 API 範例</button>
     <div id="azureStatus" style="margin-top: 10px; padding: 10px; background-color: #fff; border: 1px solid #2196F3; border-radius: 3px; min-height: 20px;"></div>
   </div>
+
+  <!-- Google Cloud 功能區域 -->
+  <div style="background-color: #f3e5f5; padding: 15px; margin: 20px 0; border: 1px solid #9c27b0; border-radius: 5px;">
+    <h3>Google Cloud 存儲管理</h3>
+    <div style="margin-bottom: 10px;">
+      <button id="googleCloudConnectBtn" style="background-color: #4285f4; color: white; padding: 8px 15px; margin: 5px; border: none; border-radius: 3px; cursor: pointer;">連接 Google Cloud</button>
+      <button id="googleCloudUploadBtn" style="background-color: #34a853; color: white; padding: 8px 15px; margin: 5px; border: none; border-radius: 3px; cursor: pointer;">上傳檔案</button>
+      <button id="googleCloudDownloadBtn" style="background-color: #fbbc04; color: white; padding: 8px 15px; margin: 5px; border: none; border-radius: 3px; cursor: pointer;">下載檔案</button>
+      <button id="googleCloudListBtn" style="background-color: #ea4335; color: white; padding: 8px 15px; margin: 5px; border: none; border-radius: 3px; cursor: pointer;">列出 Storage 檔案</button>
+    </div>
+    <div style="margin-bottom: 10px;">
+      <button id="googleCloudSaveFirestoreBtn" style="background-color: #800080; color: white; padding: 8px 15px; margin: 5px; border: none; border-radius: 3px; cursor: pointer;">保存至 Firestore</button>
+      <button id="googleCloudGetFirestoreBtn" style="background-color: #008080; color: white; padding: 8px 15px; margin: 5px; border: none; border-radius: 3px; cursor: pointer;">從 Firestore 查詢</button>
+      <button id="googleCloudStatusBtn" style="background-color: #4285f4; color: white; padding: 8px 15px; margin: 5px; border: none; border-radius: 3px; cursor: pointer;">檢查 GCP 狀態</button>
+    </div>
+    <div id="googleCloudStatus" style="margin-top: 10px; padding: 10px; background-color: #fff; border: 1px solid #9c27b0; border-radius: 3px; min-height: 20px;"></div>
+  </div>
   <div id="accountList">
     <h2>帳戶列表</h2>
     <div id="loading" style="display: none;">載入中...</div>

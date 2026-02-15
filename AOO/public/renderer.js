@@ -854,4 +854,212 @@ async function showSyncPanel() {
   document.getElementById('closeSyncBtn').addEventListener('click', () => {
     contentDiv.innerHTML = '';
   });
+
+  // ============ Google Cloud 功能 ============
+
+  // Google Cloud 連接按鈕
+  document.getElementById('googleCloudConnectBtn')?.addEventListener('click', async () => {
+    collectData('google_cloud_connect_click', {});
+    const statusDiv = document.getElementById('googleCloudStatus');
+    statusDiv.innerHTML = '<p>連接中...</p>';
+    
+    try {
+      const result = await window.electronAPI.googleCloud.connect();
+      if (result.success) {
+        statusDiv.innerHTML = `<p style="color: green;">✓ ${result.message}</p>`;
+        collectData('google_cloud_connected', {});
+      } else {
+        statusDiv.innerHTML = `<p style="color: red;">✗ ${result.message}</p>`;
+      }
+    } catch (error) {
+      statusDiv.innerHTML = `<p style="color: red;">✗ 錯誤: ${error.message}</p>`;
+    }
+  });
+
+  // Google Cloud 上傳檔案按鈕
+  document.getElementById('googleCloudUploadBtn')?.addEventListener('click', async () => {
+    collectData('google_cloud_upload_click', {});
+    const statusDiv = document.getElementById('googleCloudStatus');
+    
+    const bucket = prompt('輸入 Bucket 名稱（預設: my-bucket）:') || 'my-bucket';
+    const filePath = prompt('輸入檔案路徑（例如: accounts/test.json）:');
+    if (!filePath) return;
+    
+    statusDiv.innerHTML = '<p>上傳中...</p>';
+    
+    try {
+      // 建立示例檔案資料
+      const fileData = JSON.stringify({
+        timestamp: new Date().toISOString(),
+        accountName: 'test-account',
+        status: '已登入'
+      });
+      
+      const result = await window.electronAPI.googleCloud.uploadFile(
+        bucket,
+        filePath,
+        Buffer.from(fileData)
+      );
+      
+      if (result.success) {
+        statusDiv.innerHTML = `<p style="color: green;">✓ 檔案上傳成功: ${filePath}</p>`;
+        collectData('google_cloud_file_uploaded', { bucket, filePath });
+      } else {
+        statusDiv.innerHTML = `<p style="color: red;">✗ ${result.message}</p>`;
+      }
+    } catch (error) {
+      statusDiv.innerHTML = `<p style="color: red;">✗ 錯誤: ${error.message}</p>`;
+    }
+  });
+
+  // Google Cloud 下載檔案按鈕
+  document.getElementById('googleCloudDownloadBtn')?.addEventListener('click', async () => {
+    collectData('google_cloud_download_click', {});
+    const statusDiv = document.getElementById('googleCloudStatus');
+    
+    const bucket = prompt('輸入 Bucket 名稱（預設: my-bucket）:') || 'my-bucket';
+    const filePath = prompt('輸入檔案路徑（例如: accounts/test.json）:');
+    if (!filePath) return;
+    
+    statusDiv.innerHTML = '<p>下載中...</p>';
+    
+    try {
+      const result = await window.electronAPI.googleCloud.downloadFile(bucket, filePath);
+      
+      if (result.success) {
+        const content = result.data.toString ? result.data.toString() : JSON.stringify(result.data);
+        statusDiv.innerHTML = `
+          <p style="color: green;">✓ 檔案下載成功</p>
+          <pre style="background-color: #f5f5f5; padding: 10px; border-radius: 3px; max-height: 200px; overflow-y: auto;">
+${content}
+          </pre>
+        `;
+        collectData('google_cloud_file_downloaded', { bucket, filePath });
+      } else {
+        statusDiv.innerHTML = `<p style="color: red;">✗ ${result.message}</p>`;
+      }
+    } catch (error) {
+      statusDiv.innerHTML = `<p style="color: red;">✗ 錯誤: ${error.message}</p>`;
+    }
+  });
+
+  // Google Cloud 列出檔案按鈕
+  document.getElementById('googleCloudListBtn')?.addEventListener('click', async () => {
+    collectData('google_cloud_list_click', {});
+    const statusDiv = document.getElementById('googleCloudStatus');
+    
+    const bucket = prompt('輸入 Bucket 名稱（預設: my-bucket）:') || 'my-bucket';
+    const prefix = prompt('輸入前綴字（選用）:') || '';
+    
+    statusDiv.innerHTML = '<p>列出中...</p>';
+    
+    try {
+      const result = await window.electronAPI.googleCloud.listFiles(bucket, prefix);
+      
+      if (result.success) {
+        const filesList = result.files.map(file => 
+          `<li>${file.name} (${file.size} bytes, 更新於 ${new Date(file.updated).toLocaleString('zh-tw')})</li>`
+        ).join('');
+        
+        statusDiv.innerHTML = `
+          <p style="color: green;">✓ Bucket '${bucket}' 中的檔案：</p>
+          <ul>${filesList || '<li>無檔案</li>'}</ul>
+        `;
+        collectData('google_cloud_files_listed', { bucket, count: result.files.length });
+      } else {
+        statusDiv.innerHTML = `<p style="color: red;">✗ ${result.message}</p>`;
+      }
+    } catch (error) {
+      statusDiv.innerHTML = `<p style="color: red;">✗ 錯誤: ${error.message}</p>`;
+    }
+  });
+
+  // Google Cloud Firestore 保存按鈕
+  document.getElementById('googleCloudSaveFirestoreBtn')?.addEventListener('click', async () => {
+    collectData('google_cloud_save_firestore_click', {});
+    const statusDiv = document.getElementById('googleCloudStatus');
+    
+    const collection = prompt('輸入 Collection 名稱（預設: accounts）:') || 'accounts';
+    const documentId = prompt('輸入 Document ID:') || `doc-${Date.now()}`;
+    
+    statusDiv.innerHTML = '<p>保存中...</p>';
+    
+    try {
+      const data = {
+        timestamp: new Date().toISOString(),
+        accountName: 'test-account',
+        status: '已登入',
+        email: 'test@example.com'
+      };
+      
+      const result = await window.electronAPI.googleCloud.saveToFirestore(
+        collection,
+        documentId,
+        data
+      );
+      
+      if (result.success) {
+        statusDiv.innerHTML = `<p style="color: green;">✓ 資料已保存到 Firestore: ${collection}/${documentId}</p>`;
+        collectData('google_cloud_firestore_saved', { collection, documentId });
+      } else {
+        statusDiv.innerHTML = `<p style="color: red;">✗ ${result.message}</p>`;
+      }
+    } catch (error) {
+      statusDiv.innerHTML = `<p style="color: red;">✗ 錯誤: ${error.message}</p>`;
+    }
+  });
+
+  // Google Cloud Firestore 查詢按鈕
+  document.getElementById('googleCloudGetFirestoreBtn')?.addEventListener('click', async () => {
+    collectData('google_cloud_get_firestore_click', {});
+    const statusDiv = document.getElementById('googleCloudStatus');
+    
+    const collection = prompt('輸入 Collection 名稱（預設: accounts）:') || 'accounts';
+    const documentId = prompt('輸入 Document ID:');
+    if (!documentId) return;
+    
+    statusDiv.innerHTML = '<p>查詢中...</p>';
+    
+    try {
+      const result = await window.electronAPI.googleCloud.getFromFirestore(collection, documentId);
+      
+      if (result.success) {
+        const content = JSON.stringify(result.data, null, 2);
+        statusDiv.innerHTML = `
+          <p style="color: green;">✓ 資料已取得</p>
+          <pre style="background-color: #f5f5f5; padding: 10px; border-radius: 3px; max-height: 200px; overflow-y: auto;">
+${content}
+          </pre>
+        `;
+        collectData('google_cloud_firestore_retrieved', { collection, documentId });
+      } else {
+        statusDiv.innerHTML = `<p style="color: red;">✗ ${result.message}</p>`;
+      }
+    } catch (error) {
+      statusDiv.innerHTML = `<p style="color: red;">✗ 錯誤: ${error.message}</p>`;
+    }
+  });
+
+  // Google Cloud 狀態檢查按鈕
+  document.getElementById('googleCloudStatusBtn')?.addEventListener('click', async () => {
+    collectData('google_cloud_status_check_click', {});
+    const statusDiv = document.getElementById('googleCloudStatus');
+    statusDiv.innerHTML = '<p>檢查中...</p>';
+    
+    try {
+      const status = await window.electronAPI.googleCloud.getStatus();
+      const statusHtml = `
+        <p style="color: green;"><strong>Google Cloud 狀態</strong></p>
+        <ul style="list-style-type: none; padding: 0;">
+          <li>🔗 連接狀態: ${status.connected ? '<span style="color: green;">✓ 已連接</span>' : '<span style="color: red;">✗ 未連接</span>'}</li>
+          <li>📮 Project ID: ${status.projectId || 'N/A'}</li>
+          <li>🗂️ Storage Bucket: ${status.bucket || 'N/A'}</li>
+        </ul>
+      `;
+      statusDiv.innerHTML = statusHtml;
+      collectData('google_cloud_status_checked', { connected: status.connected });
+    } catch (error) {
+      statusDiv.innerHTML = `<p style="color: red;">✗ 錯誤: ${error.message}</p>`;
+    }
+  });
 }
